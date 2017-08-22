@@ -1,20 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Runtime.InteropServices;
 using sl;
-using System;
-using UnityEngine.UI;
 using System.IO;
-using UnityEditor;
 using System.Threading;
 using System.Linq;
 
 public class ZedSDKExtensionTest : MonoBehaviour {
 
     public int Threshold = 1000;
-
-    public RawImage img;
 
     const string nameDll = "sl_unitywrapper_extension";
 
@@ -116,6 +109,11 @@ public class ZedSDKExtensionTest : MonoBehaviour {
 
     bool receivingInputFromDll = false;
 
+    Vector3[] endMeshVertices;
+    Vector3[] endMeshNormals;
+    Vector2[] endMeshUVs;
+    int[] endMeshTriangles;
+
     private void mappingProcess()
     {
         if (receivingInputFromDll)
@@ -125,6 +123,7 @@ public class ZedSDKExtensionTest : MonoBehaviour {
             receivingInputFromDll = true;
             mappingLoop();
             receivingInputFromDll = false;
+
         };
     }
 
@@ -155,39 +154,45 @@ public class ZedSDKExtensionTest : MonoBehaviour {
                 mapping = false;
 
                 generatedMesh = generatedGO.GetComponent<MeshFilter>().mesh;
-                //generatedMesh.Clear();
+                generatedMesh.Clear();
 
                 getMesh();
 
-                Vector3[] meshVertices = new Vector3[meshSize];
-                Vector3[] meshNormals = new Vector3[meshSize];
-                Vector2[] meshUVs = new Vector2[meshSize];
+                endMeshVertices = new Vector3[meshSize];
+                endMeshNormals = new Vector3[meshSize];
+                endMeshUVs = new Vector2[meshSize];
 
                 for (int i = 0; i < meshSize; i++)
                 {
-                    meshVertices[i] = vertices[i];
-                    meshNormals[i] = normals[i];
-                    meshUVs[i] = uvs[i];
+                    endMeshVertices[i] = vertices[i];
+                    endMeshNormals[i] = normals[i];
+                    endMeshUVs[i] = uvs[i];
                 }
 
-                generatedMesh.SetVertices(meshVertices.ToList());
-                generatedMesh.SetNormals(meshNormals.ToList());
-                generatedMesh.SetUVs(0, meshUVs.ToList());
+                Debug.Log("MeshSize: " + meshSize);
+
+                generatedMesh.SetVertices(endMeshVertices.ToList());
+                generatedMesh.SetNormals(endMeshNormals.ToList());
+                generatedMesh.SetUVs(0, endMeshUVs.ToList());
 
                 int trianglesSizeUnity = triangles.Length * 3;
-                int[] meshTriangles = new int[trianglesSizeUnity];
+                endMeshTriangles = new int[trianglesSizeUnity];
 
                 for (int i = 0; i < trianglesSizeUnity; i += 3)
                 {
-                    meshTriangles[i] = triangles[i / 3].x;
-                    meshTriangles[i + 1] = triangles[i / 3].y;
-                    meshTriangles[i + 2] = triangles[i / 3].z;
+                    endMeshTriangles[i] = triangles[i / 3].x;
+                    endMeshTriangles[i + 1] = triangles[i / 3].y;
+                    endMeshTriangles[i + 2] = triangles[i / 3].z;
                 }
 
-                generatedMesh.SetTriangles(meshTriangles, 0);
+                Debug.Log("TrianglesSize: " + trianglesSizeUnity);
+
+                generatedMesh.SetTriangles(endMeshTriangles, 0);
 
                 generatedMesh.RecalculateBounds();
                 generatedMesh.RecalculateNormals();
+
+                Debug.Log("penis");
 
             }
             if (Input.GetKeyDown(KeyCode.V))
@@ -199,9 +204,17 @@ public class ZedSDKExtensionTest : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.A) && !mapping)
         {
-           sl.ERROR_CODE err = (sl.ERROR_CODE) startSpatialMapping();
+            sl.ERROR_CODE err = ERROR_CODE.FAILURE;
+            //Thread startThread = new Thread(() => 
+            //{
+            //    err = (sl.ERROR_CODE)startSpatialMapping();
+            //});
+            //startThread.Start();
+            err = (sl.ERROR_CODE)startSpatialMapping();
+
             if (err != ERROR_CODE.SUCCESS)
                 return;
+
             mapping = true;
             mappingThread = new Thread(new ThreadStart(mappingProcess));
             mappingThread.Start();        
@@ -209,6 +222,11 @@ public class ZedSDKExtensionTest : MonoBehaviour {
 
         if ((currentTimer > meshUpdateTime) && mapping && !receivingInputFromDll)
         {
+            //lock (lockObject)
+            //{
+            //    if (receivingInputFromDll)
+            //        return;
+            //}
             mappingThread = new Thread(mappingProcess);
             mappingThread.Start();
 

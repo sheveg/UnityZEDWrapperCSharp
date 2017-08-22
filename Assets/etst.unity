@@ -132,11 +132,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 79323795}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0ebfe61ee1147d4e977d380568d9604, type: 3}
+  m_Script: {fileID: 11500000, guid: 52dec83077675364dba27eb0d35f9823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Threshold: 8000
-  img: {fileID: 0}
+  m_MappingUpdateTime: 0.01
 --- !u!4 &79323797
 Transform:
   m_ObjectHideFlags: 0
