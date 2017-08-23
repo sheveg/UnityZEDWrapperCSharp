@@ -109,7 +109,6 @@ public class SpatialMappingProcess : MonoBehaviour {
 
     private float m_CurrentMappingTimer = 0f;
 
-
     #region Plugin Methods
     [DllImport(m_NameDll, EntryPoint = "startSpatialMapping")]
     private static extern int startSpatialMapping();
@@ -248,9 +247,10 @@ public class SpatialMappingProcess : MonoBehaviour {
 
     private void updateMesh()
     {
+        ZEDMesh zedMesh = getMeshFromZEDAPI();
         m_GeneratedMesh.Clear();
         // set the mesh properties
-        ZEDMesh zedMesh = getMeshFromZEDAPI();
+        
         m_GeneratedMesh.SetVertices(zedMesh.vertices.ToList());
         m_GeneratedMesh.SetNormals(zedMesh.normals.ToList());
         m_GeneratedMesh.SetTriangles(zedMesh.triangles.ToList(), 0);
@@ -282,8 +282,6 @@ public class SpatialMappingProcess : MonoBehaviour {
         texture2D.Apply();
 
         m_GeneratedGO.GetComponent<Renderer>().material.SetTexture("_MainTex", texture2D);
-        ZedSDKExtensionTest.SaveTextureToFile(texture2D, "testTexture.png");
-        Debug.Log("Texture");
     }
 
     /// <summary>
